@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install HTTPX
       run: |
         sudo apt-get update
@@ -28,9 +28,9 @@ jobs:
     - name: Run HTTPX on Hosts
       run: |
         touch results.txt
-        cat file.txt | httpx -status-code -nc -silent -o results.txt
+        cat file.txt | httpx -status-code -ip -cname -nc -silent -o results.txt
     - name: Upload results as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: httpx-results
         path: results.txt

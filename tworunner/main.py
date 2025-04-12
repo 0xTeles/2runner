@@ -73,14 +73,19 @@ def get_artifact(repo, owner, token):
         headers=headers,
     )
     data = json.loads(r.text)
-    if (data['total_count']) == 2:
-        url = data['artifacts'][0]['archive_download_url']
-        r = httpx.get(url, headers=headers)
-        zipf = io.BytesIO(r.content)
-        file = ZipFile(zipf, 'r')
-        return file.read('results.txt').decode('utf-8').split('\n')
-    else:
+    if data['total_count'] == 0:
         return False
+    else:
+        for artifact in data['artifacts']:
+            try:
+                url = artifact['archive_download_url']
+                r = httpx.get(url, headers=headers, follow_redirects=True)
+                zipf = io.BytesIO(r.content)
+                file = ZipFile(zipf, 'r')
+                return file.read('results.txt').decode('utf-8').split('\n')
+            except Exception:
+                continue
+    return False
 
 
 def del_repository(repo, owner, token):
@@ -99,6 +104,10 @@ def del_repository(repo, owner, token):
 
 def test_http(content):
     url = content.split(' ')
+
+    if len(url) <= 1:
+        return
+
     try:
         r = httpx.get(url[0], verify=False, timeout=3)
         print(
@@ -126,6 +135,14 @@ def runner(tokens, hosts, workflow):
             continue
         print(f'[+] Repository in {owner} have been created!')
 
+        create_file = send_content(repo, owner, hosts, token, 'file.txt')
+        if not create_file:
+            print(
+                f"[!] File in {owner}/{repo} couldn't been created, check your permissions!!"
+            )
+            continue
+        print(f'[+] File in {owner}/{repo} have been created!')
+
         create_workflow = send_content(
             repo, owner, workflow, token, '.github/workflows/check_hosts.yml'
         )
@@ -135,14 +152,6 @@ def runner(tokens, hosts, workflow):
             )
             continue
         print(f'[+] Workflow in {owner}/{repo} have been created!')
-
-        create_file = send_content(repo, owner, hosts, token, 'file.txt')
-        if not create_file:
-            print(
-                f"[!] File in {owner}/{repo} couldn't been created, check your permissions!!"
-            )
-            continue
-        print(f'[+] File in {owner}/{repo} have been created!')
 
         status = False
         while status is False:

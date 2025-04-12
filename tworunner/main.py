@@ -35,7 +35,7 @@ def create_repository(hash, token):
         }),
         headers={'Authorization': f'Bearer {token}'},
     )
-    if r.status_code == 201:
+    if r.status_code == httpx.codes.CREATED:
         return hash
     else:
         return False
@@ -57,7 +57,7 @@ def send_content(repo, owner, content, token, filename):
 
     url = f'https://api.github.com/repos/{owner}/{repo}/contents/{filename}'
     r = httpx.put(url, headers=headers, data=body)
-    if r.status_code == 201:
+    if r.status_code == httpx.codes.CREATED:
         return hash
     else:
         return False
@@ -91,8 +91,8 @@ def del_repository(repo, owner, token):
     r = httpx.delete(
         f'https://api.github.com/repos/{owner}/{repo}', headers=headers
     )
-    if r.status_code == 204:
-        return 0
+    if r.status_code == httpx.codes.NO_CONTENT:
+        return True
     else:
         return False
 

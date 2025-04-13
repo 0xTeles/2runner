@@ -7,9 +7,6 @@ import uuid
 from zipfile import ZipFile
 
 import httpx
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def get_user(token):

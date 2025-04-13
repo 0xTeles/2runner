@@ -1,0 +1,30 @@
+name: Check Hosts with HTTPX
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+
+jobs:
+  check_hosts:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Install HTTPX
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y unzip
+        wget https://github.com/projectdiscovery/httpx/releases/download/v1.6.8/httpx_1.6.8_linux_amd64.zip
+        unzip httpx_1.6.8_linux_amd64.zip
+        sudo mv httpx /usr/local/bin/
+    - name: Run HTTPX on Hosts
+      run: |
+        touch results.txt
+        cat file.txt | httpx -status-code -ip -cname -nc -silent -o results.txt
+    - name: Upload results as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: httpx-results
+        path: results.txt
